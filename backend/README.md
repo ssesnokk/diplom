@@ -1,0 +1,3 @@
+- 🔗 **Оригинальный репозиторий**: [OnlineStore-RestAPI](https://github.com/SLEMSIK/OnlineStore-RestAPI)
+- ✍️ **Автор**: [Vyacheslav Pechenov](https://github.com/SLEMSIK) 
+- 📖 **Репозиторий используется в статье**: [Создание интернет-магазина на Node.js с нуля. Часть 2: Бэкенд](https://timeweb.cloud/tutorials/nodejs/sozdanie-internet-magazina-na-node-js-s-nulya-chast-2-backend)
