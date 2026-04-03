@@ -1,32 +1,17 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs"; // Нужно будет установить: npm install bcryptjs
 
 const userSchema = new mongoose.Schema({
-    firstName : {
-        type : String, 
-        required : true,
-    }, lastName : { 
-        type : String, 
-        required : true,
-    }, email: {
-        type: String,
-        unique: true,
+    name: { type: String, required: true }, // Убедитесь, что поле называется name, а не firstName/lastName
+    email: { type: String, unique: true, required: true },
+    password: { type: String, required: true }, // Обязательно должно быть
+    phone: { type: String },
+    isAdmin: { type: Boolean, default: false }
+}, { timestamps: true });
 
-    }, phone : {
-        type: Number,
-        unique: true,
+// Метод для сравнения паролей
+userSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
 
-    }, address : {
-        type: String,
-        
-    }, region: {
-        type: String,
-
-    }, city : {
-        type: String,
-
-    }, postCode : {
-        type: String,
-    }
-})
-
-export default mongoose.model("users",userSchema)
+export default mongoose.model("User", userSchema);

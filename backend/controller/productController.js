@@ -1,68 +1,61 @@
-import Product from "../model/productModel.js"
+import Product from "../model/productModel.js";
 
-export const create = async(req, res)=>{
+// Получить все товары
+export const fetch = async (req, res) => {
     try {
-        const productData = new Product( req.body);
-        const {title} = productData;
-        const productExist = await Product.findOne({title})
-        if (productExist){
-            return res.status(400).json({message : "Product already exist."})
-        }
-        const savedProduct = await productData.save();
-        res.status(200).json(savedProduct)
-    } catch (error) {   
-        res.status(500).json({error : "Internal Server Error. "})
-    }
-}
-
-export const fetch = async (req, res)=>{
-    try {
-        const products = await Product.find();
-        if(products.length === 0 ){
-            return res.status(404).json({message : "Product not Found."})
-        }
+        const products = await Product.find().sort({ createdAt: -1 });
         res.status(200).json(products);
     } catch (error) {
-        res.status(500).json({error : " Internal Server Error. "})
+        console.error("Fetch products error:", error);
+        res.status(500).json({ message: "Ошибка при получении товаров", error: error.message });
     }
-}
+};
 
-export const fetch2 = async (req, res)=>{
+// Получить один товар по ID
+export const fetch2 = async (req, res) => {
     try {
-        const id = req.params.id;
-        const products = await Product.findOne({_id:id})
-        if(products.length === 0 ){
-            return res.status(404).json({message : "Product not Found."})
-        }
-        res.status(200).json(products);
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: "Товар не найден" });
+        res.status(200).json(product);
     } catch (error) {
-        res.status(500).json({error : " Internal Server Error. "})
+        res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
-}
+};
 
-export const update = async (req, res)=>{
+// Создать товар
+export const create = async (req, res) => {
     try {
-        const id = req.params.id;
-        const productExist = await Product.findOne({_id:id})
-        if (!productExist){
-            return res.status(404).json({message : "Product not found."})
-        }
-        const updateProduct = await Product.findByIdAndUpdate(id, req.body, {new : true});
-        res.status(201).json(updateProduct);
+        const newProduct = new Product(req.body);
+        const savedProduct = await newProduct.save();
+        res.status(201).json(savedProduct);
     } catch (error) {
-        res.status(500).json({error : " Internal Server Error. "})
+        console.error("Create product error:", error);
+        res.status(500).json({ message: "Ошибка создания товара", error: error.message });
     }
-}
-export const deleteProduct = async (req, res)=>{
+};
+
+// Обновить товар
+export const update = async (req, res) => {
     try {
-        const id = req.params.id;
-        const productExist = await Product.findOne({_id:id})
-        if(!productExist){
-            return res.status(404).json({message : " Product Not Found. "})
-        }
-        await Product.findByIdAndDelete(id);
-        res.status(201).json({message : " Product deleted Successfully."})
+        const updatedProduct = await Product.findByIdAndUpdate(
+            req.params.id, 
+            req.body, 
+            { new: true, runValidators: true }
+        );
+        if (!updatedProduct) return res.status(404).json({ message: "Товар не найден" });
+        res.status(200).json(updatedProduct);
     } catch (error) {
-        res.status(500).json({error : " Internal Server Error. "})
+        res.status(500).json({ message: "Ошибка обновления товара", error: error.message });
     }
-}
+};
+
+// Удалить товар
+export const deleteProduct = async (req, res) => {
+    try {
+        const deleted = await Product.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ message: "Товар не найден" });
+        res.status(200).json({ message: "Товар удален успешно" });
+    } catch (error) {
+        res.status(500).json({ message: "Ошибка удаления товара", error: error.message });
+    }
+};

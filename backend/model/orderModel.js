@@ -1,55 +1,56 @@
 import mongoose from "mongoose";
 
-var createdAt = function(){
-    const now = new Date();
-    const formattedDate = now.toISOString();
-    return formattedDate;
-};
-
-
 const orderSchema = new mongoose.Schema({
-    firstName : {
-        type : String, 
-        required : true,
-    }, lastName : { 
-        type : String, 
-        required : true,
-    }, email: {
+    orderNumber: {
         type: String,
-        required : true,
-    }, phone : {
-        type: Number,
-        required : true,
-    }, company: {
-        type: String,
-    }, address : {
-        type: String,
-        required : true,
-        
-    }, region: {
-        type: String,
-        required : true,
-
-    }, city : {
-        type: String,
-        required : true,
-
-    }, postCode : {
-        type: String,
-        required : true,
-    }, products: {
-        type: Object,
-        required : true,
-    }, status : {
-        type: Object,
-        required : true,
-    }, price : {
-        type: Number,
-        required : true,
-    }, createdAt: {
-        type: String,
-        default: createdAt
+        unique: true,
+        required: true
     },
-})
+    customerName: {
+        type: String,
+        required: true
+    },
+    customerEmail: { 
+        type: String,
+        required: true,
+        index: true 
+    },
+    customerPhone: { // ИСПРАВЛЕНО: было phone, стало customerPhone
+        type: String,
+        required: true
+    },
+    deliveryAddress: {
+        type: String,
+        required: true
+    },
+    paymentMethod: {
+        type: String,
+        required: true,
+        enum: ['Наличные', 'Карта курьеру', 'Онлайн']
+    },
+    items: [
+        {
+            product: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'products',
+                required: false
+            },
+            name: { type: String, required: true },
+            price: { type: Number, required: true },
+            quantity: { type: Number, required: true },
+            image: String,
+            selectedVariant: Object
+        }
+    ],
+    totalAmount: {
+        type: Number,
+        required: true
+    },
+    status: {
+        type: String,
+        default: 'Новый',
+        enum: ['Новый', 'В обработке', 'Доставляется', 'Вручен', 'Отменен']
+    }
+}, { timestamps: true });
 
-export default mongoose.model("order",orderSchema)
+export default mongoose.model("orders", orderSchema);

@@ -1,40 +1,28 @@
 import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema({
-    title : {
-        type : String, 
-        required : true,
-        unique: true,
-    }, subtitle : { 
-        type : String, 
-        required : true,
-        unique: true,
-    }, article: {
-        type: String,
-        required : true,
-        unique: true,
+    name: { type: String, required: true },
+    sku: { type: String, required: true, unique: true }, // Артикул
+    brand: { type: String, required: true }, // Бренд
+    category: { type: String, required: true },
+    subcategory: { type: String, required: true },
+    description: { type: String, required: true },
+    image: { type: String, required: true },
+    // Базовая цена (может использоваться как "от", если есть варианты)
+    price: { type: Number, required: true }, 
+    discount: { type: Number, default: 0 }, // Скидка в процентах или рублях
+    countInStock: { type: Number, required: true, default: 0 },
+    
+    // Новые поля для модификаций (вес, объем и т.д.)
+    variants: [{
+        weight: { type: String, required: true }, // Например: "1 кг", "5 л"
+        price: { type: Number, required: true },
+        countInStock: { type: Number, required: true, default: 0 }
+    }]
+}, {
+    timestamps: true
+});
 
-    }, brand : {
-        type: String,
-        required : true,
+const Product = mongoose.model("Product", productSchema);
 
-    }, oldPrice: {
-        type: Number,
-
-    }, price : {
-        type: Number,
-        required: true,
-    }, path: {
-        type: Array,
-        required: true,
-    }, specifications: {
-        type: Object,
-        of: String,
-        required : true,
-    }, images: {
-        type: Array,
-        required : true,
-    }
-})
-
-export default mongoose.model("product",productSchema)
+export default Product;

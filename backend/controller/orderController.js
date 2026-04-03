@@ -1,92 +1,76 @@
-import Order from "../model/orderModel.js"
-import sendEmail from "../function/createCheque.js"
+import Order from "../model/orderModel.js";
 
-export const create = async(req, res)=>{
+// Создать заказ
+export const create = async (req, res) => {
     try {
-        const orderData = new Order( req.body);
-        const {createdAt} = orderData;
-        const orderExist = await Order.findOne({createdAt})
-        if (orderExist){
-            return res.status(400).json({message : "Order already exist."})
-        }
+        const orderNumber = 'ORD-' + Date.now().toString().slice(-6);
         
-        sendEmail(orderData)
-        const savedOrder = await orderData.save();
-        res.status(200).json(savedOrder)
+        const newOrder = new Order({
+            ...req.body,
+            orderNumber,
+            status: req.body.status || 'Новый'
+        });
         
-    } catch (error) {   
-        console.log(error);
-        
-        res.status(500).json({error : "Internal Server Error. "})
+        const savedOrder = await newOrder.save();
+        res.status(201).json(savedOrder);
+    } catch (error) {
+        console.error("Create order error:", error);
+        res.status(500).json({ message: "Ошибка создания заказа", error: error.message });
     }
-}
+};
 
-export const fetch = async (req, res)=>{
+// Получить все заказы (для админки)
+export const fetch = async (req, res) => {
     try {
-        const orders = await Order.find();
-        if(orders.length === 0 ){
-            return res.status(404).json({message : "Order not Found."})
-        }
+        const orders = await Order.find().sort({ createdAt: -1 });
         res.status(200).json(orders);
     } catch (error) {
-        res.status(500).json({error : " Internal Server Error. "})
+        res.status(500).json({ message: "Ошибка получения заказов", error: error.message });
     }
-}
-export const fetch2 = async (req, res)=>{
+};
+
+// Получить заказы пользователя (по email)
+export const fetchUserOrders = async (req, res) => {
     try {
-        const orders = await Order.find();
-        if(orders.length === 0 ){
-            return res.status(404).json({message : "Order not Found."})
-        }
-        const filteredData = orders.filter((order) => {
-            return !Object.keys(order.status).some(key => key === "Заказ вручен! Спасибо за покупку");
-          });
-        res.status(200).json(filteredData);
-    } catch (error) {
-        console.log(error);
+        const { email } = req.params;
+        if (!email) return res.status(400).json({ message: "Email обязателен" });
         
-        res.status(500).json({error : " Internal Server Error. "})
-    }
-}
-export const fetch3 = async (req, res)=>{
-    try {
-        const orders = await Order.find();
-        if(orders.length === 0 ){
-            return res.status(404).json({message : "Order not Found."})
-        }
-        const filteredData = orders.filter((order) => {
-            return Object.keys(order.status).some(key => key === "Заказ вручен! Спасибо за покупку");
-          });
-        res.status(200).json(filteredData);
+        // Ищем строго по полю customerEmail
+        const orders = await Order.find({ customerEmail: email }).sort({ createdAt: -1 });
+        res.status(200).json(orders);
     } catch (error) {
-        res.status(500).json({error : " Internal Server Error. "})
+        res.status(500).json({ message: "Ошибка получения заказов пользователя", error: error.message });
     }
-}
+};
 
-export const update = async (req, res)=>{
+// Обновить статус заказа
+export const update = async (req, res) => {
     try {
-        const id = req.params.id;
-        const orderExist = await Order.findOne({_id:id})
-        if (!orderExist){
-            return res.status(404).json({message : "Order not found."})
-        }
-        const updateOrder = await Order.findByIdAndUpdate(id, req.body, {new : true});
-        res.status(201).json(updateOrder);
-    } catch (error) {
-        res.status(500).json({error : " Internal Server Error. "})
-    }
-}
+        const { id } = req.params;
+        const { status } = req.body;
+        
+        if (!status) return res.status(400).json({ message: "Статус обязателен" });
 
-export const deleteProduct = async (req, res)=>{
-    try {
-        const id = req.params.id;
-        const orderExist = await Order.findOne({_id:id})
-        if (!orderExist){
-            return res.status(404).json({message : " Order Not Found. "})
-        }
-        await Order.findByIdAndDelete(id);
-        res.status(201).json({message : " Order deleted Successfully."})
+        const updatedOrder = await Order.findByIdAndUpdate(
+            id, 
+            { status }, 
+            { new: true }
+        );
+        
+        if (!updatedOrder) return res.status(404).json({ message: "Заказ не найден" });
+        res.status(200).json(updatedOrder);
     } catch (error) {
-        res.status(500).json({error : " Internal Server Error. "})
+        res.status(500).json({ message: "Ошибка обновления статуса", error: error.message });
     }
-}
+};
+
+// Удалить заказ
+export const deleteProduct = async (req, res) => {
+    try {
+        const deleted = await Order.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ message: "Заказ не найден" });
+        res.status(200).json({ message: "Заказ удален" });
+    } catch (error) {
+        res.status(500).json({ message: "Ошибка удаления", error: error.message });
+    }
+};
