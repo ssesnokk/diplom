@@ -2,21 +2,24 @@ import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    sku: { type: String, required: true, unique: true }, // Артикул
-    brand: { type: String, required: true }, // Бренд
+    sku: { type: String, required: true, unique: true },
+    brand: { type: String, required: true },
     category: { type: String, required: true },
     subcategory: { type: String, required: true },
     description: { type: String, required: true },
     image: { type: String, required: true },
-    // Базовая цена (может использоваться как "от", если есть варианты)
+    
+    // Базовая цена и скидка для товара без вариантов
     price: { type: Number, required: true }, 
-    discount: { type: Number, default: 0 }, // Скидка в процентах или рублях
+    discount: { type: Number, default: 0 }, 
+    
     countInStock: { type: Number, required: true, default: 0 },
     
-    // Новые поля для модификаций (вес, объем и т.д.)
+    // Варианты (фасовки)
     variants: [{
-        weight: { type: String, required: true }, // Например: "1 кг", "5 л"
+        weight: { type: String, required: true },
         price: { type: Number, required: true },
+        discount: { type: Number, default: 0 }, // <--- ДОБАВЛЕНО ЭТО ПОЛЕ
         countInStock: { type: Number, required: true, default: 0 }
     }]
 }, {

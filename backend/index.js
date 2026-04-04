@@ -6,6 +6,7 @@ import cors from 'cors'; // 1. Импорт CORS
 import userRoute from "./routes/userRoute.js"
 import productRoute from "./routes/productRoute.js"
 import orderRoute from "./routes/orderRoute.js"
+import storeRoute from "./routes/storeRoute.js"
 
 const app = express ();
 
@@ -27,3 +28,4 @@ mongoose.connect(MONGOURL).then(()=>{
 app.use("/api/user", userRoute)
 app.use("/api/product", productRoute)
 app.use("/api/order", orderRoute)
+app.use("/api/store", storeRoute)
